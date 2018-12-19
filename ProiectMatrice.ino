@@ -1,6 +1,8 @@
-#include "LedControl.h" //  need the library
+#include "LedControl.h"
 #include <LiquidCrystal.h>
 #include <EEPROM.h>
+
+//defining the controls of the game
 
 #define JOY_X A0
 #define JOY_Y A1
@@ -19,8 +21,8 @@ int oldPieceX = 0;
 int oldWantToTurn = 0;
 long lastMove = 0;
 const long moveDelay = 100;
-const long dropDelay = 500;
 const long menuMoveDelay = 150;
+long dropDelay = 700;
 int oldButton = 0;
 int prevX = 3, prevY = 3, posX = 3, posY = 3;
 int buttonState = 0;
@@ -241,6 +243,10 @@ void resetGame() {
   for (int i = 0; i < 8; ++i)
     for (int j = 0; j < 8; ++j)
       matrix[i][j] = 0;
+  score = 0;
+  lcd.clear();
+  lcd.setCursor(2,7);
+  lcd.print(score);
   chooseNewPiece();
   return;
 }
@@ -286,7 +292,57 @@ void menu() {
         lcd.print("Return");
         select = digitalRead(JOY_BTN);
         if (select == 1)
+          {
+          lcd.clear();
+          lcd.setCursor(2,7);
+          lcd.print(score);
           return;
+          }
+        break;
+      default:
+        break;
+      }
+    }
+
+  }
+
+}
+
+void startMenu() {
+  int select = 0;
+  long int lastMenuMove = lastMove;
+  while (1) {
+
+    if (millis() - lastMenuMove > menuMoveDelay) {
+      lastMenuMove = millis();
+      int valY = analogRead(JOY_Y);
+      if (valY > 600)
+        menuItem++;
+      if (valY < 400)
+        menuItem--;
+      if (menuItem > 1)
+        menuItem = 0;
+      if (menuItem < 0)
+        menuItem = 1;
+      Serial.println(menuItem);
+      switch (menuItem) {
+      case 0:
+        lcd.clear();
+        lcd.print("New Game");
+        select = digitalRead(JOY_BTN);
+        if (select == 1) {
+          resetGame();
+          return;
+        }
+        break;
+      case 1:
+        lcd.clear();
+        lcd.print("High score");
+        select = digitalRead(JOY_BTN);
+        if (select == 1) {
+          lcd.clear();
+          lcd.print(EEPROMReadInt());
+        }
         break;
       default:
         break;
@@ -361,6 +417,10 @@ void deleteRow(int y) {
     matrix[0][x] = 0;
   }
   score += 50;
+  if( score > 200) dropDelay = 650;
+  if( score > 300) dropDelay = 600;
+  if( score > 400) dropDelay = 550;
+  if( score > 500) dropDelay = 500;
   lcd.clear();
   lcd.setCursor(2, 7);
   lcd.print(score);
@@ -557,7 +617,7 @@ void reactToPlayer() {
 
 void gameOver() {
   highScoreReplace();
-  menu();
+  startMenu();
 }
 
 void drawMatrix() {
@@ -580,11 +640,11 @@ void setup() {
   lastDrop = lastMove;
   lcd.begin(16, 2);
   //lcd.clear();
-  lcd.setCursor(2, 7); // 2 = a cata casuta din linie sa fie aprinsa
+  lcd.setCursor(2, 7); 
+  pinMode(V0_PIN, OUTPUT); 
+  analogWrite(V0_PIN, 90); 
 
-  pinMode(V0_PIN, OUTPUT); // PWN in loc de POTENTIOMETRU
-  analogWrite(V0_PIN, 90); // PWN in loc de POTENTIOMETRU
-
+  startMenu();
 }
 
 void loop() {
