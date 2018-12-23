@@ -31,4 +31,4 @@ Pyshical Parts :
 
 ## Creator 
 [Alexandru Laszlo](https://www.linkedin.com/in/alexandru-andrei-laszlo/)
-
+[Video](https://www.youtube.com/watch?v=UuebKhTBvRk&feature=share&fbclid=IwAR1ARChUst5r8OvtaRTVpaZXyLeKS03tI4x7dCwZzhTJrP1enqnoF-u_-qk)
